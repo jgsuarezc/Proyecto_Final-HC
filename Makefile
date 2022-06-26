@@ -7,4 +7,4 @@ datos.txt : ejecutable.x
 ejecutable.x : N-body.cpp
 			$(CXX) $(CXXFLAGS) $< -o $@
 clean :
-			rm -f datos.txt ejecutable.x
+			rm datos.txt ejecutable.x
