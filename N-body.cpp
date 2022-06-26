@@ -1,55 +1,58 @@
 #include<iostream>
 #include<cmath>
 #include<random>
+#include<vector>
+
 //structura
 struct Particulas{
-double x,y=0;
-double Vx,Vy=0;
-double Fx=0;
+double x,y;
+double Vx,Vy;
+double F;
 double M=1;
 };
 
-void fuerza(double & F); // Fuerza gravitacional
+double fuerza(double m1,double m2,double d); // Fuerza gravitacional
 
-int int main(int argc, char const *argv[]) {
-  int seed=1;
+int main(int argc, char *argv[]) {
+  int N=10;
+  int seed=3;
   std::mt19937 gen(seed);
-  std::uniform_real_distribution<double> dis(-1.0, 1.0);
-  std::vector<Particulas>masas;
-  masas.resize(N);
+  std::uniform_real_distribution<double> dis(0, 1.0);
+  std::vector<Particulas>planeta;
+  planeta.resize(N);
 
   for (int ii = 0; ii < N; ++ii) {
-    double masas[N].x = dis(gen);
-    double masas[N].y = dis(gen);
+    planeta[N].x = dis(gen);
+    planeta[N].y = dis(gen);
 
 }
 
-  for (int ii = 0; ii < N; ++ii){
-      std::cout << masa[ii].x << "\t"<< masa[ii].y<< std::endl;
+  for (int ii = 0; ii< N; ++ii){
+      std::cout << planeta[ii].x << "\t"<< planeta[ii].y<< std::endl;
 
   }
-
 
 
 //fuerza Total sobre la particula
 
 
 
-  for (int ii = 0; ii < N; ++ii) {
-    for(int jj = 0; jj < N; ++ii){
-      sum=0;
+  for (int ii = 0; ii < N; ii+1) {
+    double sum=0;
+    for(int jj = 0; jj < N; jj+1){
+
       // para una particula suma las fuerzas debida a las demas  excepto ella misma
         if(jj=!ii){
-          double M1T=masa[ii].M;
-          double M2T=masa[jj].M;
-          double distancia= std::pow(masa[ii].x-std::pow(masa[jj].x,2),2)-std::pow(masa[ii].x-std::pow(masa[jj].x,2),2);
-          sum=sum + fuerza(M1T,M2T,distancia)
+          double M1T=planeta[ii].M;
+          double M2T=planeta[jj].M;
+          double distancia= std::pow(planeta[ii].x-std::pow(planeta[jj].x,2),2)-std::pow(planeta[ii].x-std::pow(planeta[jj].x,2),2); //(xi-xj)^2+(xj,yj)^2
+          sum=sum + fuerza(M1T,M2T,3);
         }
         //fuerza neta sobre la particula
-        masa[ii].F=sum;
         }
+   planeta[ii].F=sum;
       }
-    }
+
 
   return 0;
 }
@@ -64,5 +67,5 @@ double fuerza(double m1,double m2,double d){
   double F=(G*m1*m2)/std::pow(d,2);// fuerza gravitacional
 
 
-return double;
+return F;
 }
