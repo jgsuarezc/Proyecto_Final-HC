@@ -2,6 +2,7 @@
 #include<cmath>
 #include<random>
 #include<vector>
+#include "mpi.h"
 
 
 //estructura que define las propiedad de la particula
@@ -9,17 +10,32 @@ struct Particulas{
   double x,y;// posición del la particula
   double Vx,Vy;//velocidad
   double F;//fuerza sobre ella
-  double M=1;
+  double M=1;//masa  1(provicional)
 };
 
+/*
+MPI_Datatype mpi_struct_p;//Nuevo Tipo de dato en MPI
+MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
+  int len[6] = {1,2,3,4,5,6};
+  MPI_Aint offset[6] = {(MPI_Aint)offsetof(Star, m),(MPI_Aint)offsetof(Star, x)};
+  MPI_Type_create_struct(2, len, offset, types, &mpi_star);
+  MPI_Type_commit(&mpi_star);
+*/
+
+
 double fuerza(double m1,double m2,double d); // Fuerza gravitacional
-void posicion (std::vector<Particulas> &planeta,int N,double seed);//posicion (modifica el vector por referencia)
+void posicion (std::vector<Particulas> &planeta,int N,double seed);//posición (modifica el vector por referencia)
+//serie
 void FuerzaT (std::vector<Particulas> &planeta,int N);//Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta,int N);// imprime en pantalla la posicion y la fuerza
+//paralelo
+void FuerzaT (std::vector<Particulas> &planeta,int N,int pid,int np);//Fuerza Total
+void imprimir(const std::vector<Particulas> &planeta,int N,int pid,int np);// imprime en pantalla la posicion y la fuerza
+
 
 int main(int argc, char *argv[]) {
 
-
+//recibe por consola
   int N=atoi(argv[1]);//Numero de particulas
   double seed=atoi(argv[2]);//semilla genera la posicion aleatoria
   //vector con N particulas
@@ -30,11 +46,23 @@ int main(int argc, char *argv[]) {
   FuerzaT(planeta,N);
   imprimir(planeta,N);
 
+  MPI_Init(&argc, &argv);
+  int pid, np;
+  MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+
+  MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+  MPI_Finalize();
+
 
 
 
   return 0;
 }
+
+
+//serial
+
 //fuerza gravitacional
 double fuerza(double m1,double m2,double d){
 
