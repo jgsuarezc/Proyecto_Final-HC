@@ -1,0 +1,10 @@
+*.out
+*txt
+*dat
+*data
+*cachegrind.out*
+*.x
+*.old
+*~
+*.gif
+*-solution.cpp
