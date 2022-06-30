@@ -186,7 +186,7 @@ void FParallelo(std::vector<Particulas> &planeta,int N,int pid,int np)
 }
 
 //Funcion calcula las fuerzas de las particulas perteneciente al proceso
-void XManda(std::vector<Particulas> PR,int pid ,int np){
+void XPres(std::vector<Particulas> PR,int pid ,int np){
   double sum;
 //fuerza debida a las n  particulas propias del proceso
 for (int ii = N*pid/np; ii < N*(pid+1)/np; ii++) {
@@ -207,7 +207,7 @@ for (int ii = N*pid/np; ii < N*(pid+1)/np; ii++) {
 
 //calcula la fuerza debida a los datos recibido del proceso anterior guardos  en buffer
 }
-void XRecibe(std::vector<Particulas> PR,std::vector<Particulas> Bu,int pid ,int np){
+void XPres(std::vector<Particulas> PR,std::vector<Particulas> Bu,int pid ,int np){
 
   //fuerza debida a las n  particulas propias del proceso
   for (int ii = 0; ii <= N*(pid+1)/np; ii++) {
