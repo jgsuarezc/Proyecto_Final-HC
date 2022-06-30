@@ -13,15 +13,6 @@ struct Particulas{
   double M=1;//masa  1(provicional)
 };
 
-/*
-MPI_Datatype mpi_struct_p;//Nuevo Tipo de dato en MPI
-MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
-  int len[6] = {1,2,3,4,5,6};
-  MPI_Aint offset[6] = {(MPI_Aint)offsetof(Star, m),(MPI_Aint)offsetof(Star, x)};
-  MPI_Type_create_struct(2, len, offset, types, &mpi_star);
-  MPI_Type_commit(&mpi_star);
-*/
-
 
 double fuerza(double m1,double m2,double d); // Fuerza gravitacional
 void posicion (std::vector<Particulas> &planeta,int N,double seed);//posición (modifica el vector por referencia)
@@ -29,7 +20,7 @@ void posicion (std::vector<Particulas> &planeta,int N,double seed);//posición (
 void FuerzaT (std::vector<Particulas> &planeta,int N);//Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta,int N);// imprime en pantalla la posicion y la fuerza
 //paralelo
-void FuerzaT (std::vector<Particulas> &planeta,int N,int pid,int np);//Fuerza Total
+void FParallelo(std::vector<Particulas> &planeta,int N,int pid,int np);//Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta,int N,int pid,int np);// imprime en pantalla la posicion y la fuerza
 
 
@@ -110,4 +101,44 @@ void imprimir(const std::vector<Particulas> &planeta,int N){
     // imprime la posicion x e y junto a la fuerza
     std::cout << planeta[ii].x << "\t"<< planeta[ii].y<< "\t"<< planeta[ii].F<<std::endl;
   }
+}
+
+
+// paralelizado
+// Suma lafuerza en paralelo
+void FParallelo(std::vector<Particulas> &planeta,int N,int pid,int np);
+{
+
+  const int nitems=6;
+  int len[6] = {1,2,3,4,5,6};
+  MPI_Datatype types[6] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
+  MPI_Datatype mpi_struct_type;//Nuevo Tipo de dato en MPI
+  MPI_Aint offset[6];
+  offsets[0] = offsetof(Particulas, x);
+  offsets[1] = offsetof(Particulas, y);
+  offsets[2] = offsetof(Particulas, Vx);
+  offsets[3] = offsetof(Particulas, Vy);
+  offsets[4] = offsetof(Particulas, F);
+  offsets[5] = offsetof(Particulas, M);
+
+  MPI_Type_create_struct(nitems, len, offset, types, &mpi_struct_type);
+  MPI_Type_commit(&mpi_struct_type);
+
+
+  //valor
+  std::vector<Particulas>buffer;
+  std::vector<Particulas>tag;
+
+    int next = (pid+1)%np;
+    int prev = (pid-1+np)%np;
+    if (pid == 0) {
+      MPI_Send(&planeta, 1,MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
+
+      MPI_Recv(&tag, 1,MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    } else {
+      MPI_Recv(&planeta, 1,MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+      MPI_Send(&buf, 1, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
+    }
+
 }
