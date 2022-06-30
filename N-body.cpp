@@ -171,22 +171,22 @@ void FParallelo(std::vector<Particulas> &planeta,int N,int pid,int np)
   int next = (pid+1)%np;
   int prev = (pid-1+np)%np;
   if (pid == 0){
-      XManda(P,pid,np);
+      Xp(P,pid,np);
       MPI_Send(&P, N/np,mpi_struct_type, next, tag, MPI_COMM_WORLD);
       MPI_Recv(&buffer, N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
     }
      else {
-      XManda(P,pid,np);
+      XPrestados(P,pid,np);
       MPI_Recv(&P,N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      XRecibe(P,buffer,pid,np);
+      XPropios(P,buffer,pid,np);
       MPI_Send(&buffer, N/np,mpi_struct_type , next, tag, MPI_COMM_WORLD);
     }
 
 }
 
 //Funcion calcula las fuerzas de las particulas perteneciente al proceso
-void XPres(std::vector<Particulas> PR,int pid ,int np){
+void XPropios  (std::vector<Particulas> PR,int pid ,int np){
   double sum;
 //fuerza debida a las n  particulas propias del proceso
 for (int ii = N*pid/np; ii < N*(pid+1)/np; ii++) {
@@ -207,7 +207,7 @@ for (int ii = N*pid/np; ii < N*(pid+1)/np; ii++) {
 
 //calcula la fuerza debida a los datos recibido del proceso anterior guardos  en buffer
 }
-void XPres(std::vector<Particulas> PR,std::vector<Particulas> Bu,int pid ,int np){
+void XPrestados(std::vector<Particulas> PR,std::vector<Particulas> Bu,int pid ,int np){
 
   //fuerza debida a las n  particulas propias del proceso
   for (int ii = 0; ii <= N*(pid+1)/np; ii++) {
