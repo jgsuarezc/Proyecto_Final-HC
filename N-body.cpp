@@ -22,8 +22,9 @@
           posicion(planeta,N,seed);
           FuerzaT(planeta,N);
           imprimir(planeta,N);
-          /* MPI setup */
+          nt np, pid;
           MPI_Init(&argc, &argv);
+
           MPI_Comm_rank(MPI_COMM_WORLD, &pid);
           MPI_Comm_size(MPI_COMM_WORLD, &np);
 
