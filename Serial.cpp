@@ -10,7 +10,7 @@
 double fuerza(double m1,double m2,double d){
 
   double G= 1;// constante de proporcionalidad de la fuerza
-  double F=(G*m1*m2)/std::pow(d,2);// fuerza gravitacional
+  double F=(G*m1*m2)/(d*d);// fuerza gravitacional
 
 return F;
 }
