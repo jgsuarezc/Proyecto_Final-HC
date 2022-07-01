@@ -3,8 +3,7 @@
         #include<vector>
         #include"D.hpp"
         #include"Serial.h"
-
-        //#include "mpi.h"
+        #include "mpi.h"
 
         void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
         void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
@@ -23,7 +22,13 @@
           posicion(planeta,N,seed);
           FuerzaT(planeta,N);
           imprimir(planeta,N);
+          /* MPI setup */
+          MPI_Init(&argc, &argv);
+          MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+          MPI_Comm_size(MPI_COMM_WORLD, &np);
 
+
+          MPI_Finalize();
 
 
 
@@ -31,7 +36,7 @@
           return 0;
         }
 
-/*
+
 
 
 
@@ -124,5 +129,3 @@
             }
 
         }
-
-*/
