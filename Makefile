@@ -1,16 +1,6 @@
-CXX=g++
+CXX =g++
 CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
+A= Serial.cpp N-body.cpp
 
-
-ejecutable.x : D.hpp Serial.cpp N-body.cpp
-			$(CXX) $(CXXFLAGS) $< -o $@
-
-
-#%.x: %.o .hpp.o
-#	source $$HOME/repos/spack/share/spack/setup-env.sh; \spack load catch2; \
-		g++ $$(pkg-config --cflags catch2) $^ -o $@
-
-clean:
-	rm -f *.o *~ *.x
-
-#g++ $(pkg-config --cflags catch2) TestCatch.cpp
+ejecutable.x : $(A)
+	$(CXX) $(CXXFLAGS ) $(A) -o ejecutable.x

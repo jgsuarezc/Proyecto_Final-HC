@@ -6,10 +6,10 @@
 
         //#include "mpi.h"
 
-        //void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
-        //void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
+        void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
+        void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
 
-        //void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
+        void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
 
         int main(int argc, char *argv[]) {
 
@@ -31,10 +31,10 @@
           return 0;
         }
 
-
-
-
 /*
+
+
+
         // paralelizado
         // Suma lafuerza en paralelo
         //Funcion calcula las fuerzas de las particulas perteneciente al proceso
@@ -124,4 +124,5 @@
             }
 
         }
+
 */
