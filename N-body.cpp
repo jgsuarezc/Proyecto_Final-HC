@@ -23,7 +23,7 @@
         // imprimir2(const double M,int N);
 
         void XPropios(std::vector<Particulas> PR,int N,int pid ,int np);
-        void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> &Bu,int pid ,int np);
+        void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> Bu,int pid ,int np);
 
         void FParallelo(std::vector<Particulas> planeta,int N,int pid,int np);
 
@@ -109,36 +109,7 @@
           }
         }
 
-        /*
-        void FuerzaT2(double & M,const std::vector<Particulas> planeta,int N){ //fuerza total array
 
-          for (int ii = 0; ii < N; ii++) {
-            double sum=0;
-            for(int jj = 0; jj < N; jj++){
-
-              // para una particula suma las fuerzas debida a las demas  excepto ella misma
-                if(jj==ii){M[ii+N*jj]=0}
-                  double M1T=planeta[ii].M;
-                  double M2T=planeta[jj].M;
-                  double dx=planeta[ii].x-planeta[jj].x;//distancia xi-xj
-                  double dy=planeta[ii].y-planeta[jj].y;//distancia yi-yj
-                  double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
-                  double d3=sqrt(d*d)
-                  M[ii+N*jj]= fuerza(M1T,M2T,d);// guarda en un arreglo un la fuerza sobre i debido a j
-            }
-          }
-        }
-
-
-        void imprimir2(const double M,int N){
-          for (int ii = 0; ii< N; ++ii){
-            for(int jj=0;jj<N;++jj)
-            // imprime la posicion x e y junto a la fuerza
-            std::cout << M[ii+N*jj] <<std::endl;
-          }
-        }
-
-        */
 
         // paralelizado
         // Suma lafuerza en paralelo
@@ -162,11 +133,11 @@
 
           }
 
-        //calcula la fuerza debida a los datos recibido del proceso anterior guardos  en buffer
+        //calcula la fuerza debida a los posiciones recibidas que  guardo  en buffer
         }
         void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> Bu,int pid ,int np){
           double sum;
-          //fuerza debida a las n  particulas propias del proceso
+          //fuerza debida a las n  particulas recibidas
           for (int ii = 0; ii <= N*(pid+1)/np; ii++) {
             double sum=0;
             for(int jj = N/np; jj <=(N+1)/np; jj++){
@@ -185,11 +156,11 @@
 
         void FParallelo(std::vector<Particulas> planeta,int N,int pid,int np)
         {
-
+          //Nuevo Tipo de dato en MPI por medio de la estructura:
           const int nitems=6;
           int len[6] = {1,2,3,4,5,6};
           MPI_Datatype types[6] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
-          MPI_Datatype mpi_struct_type;//Nuevo Tipo de dato en MPI
+          MPI_Datatype mpi_struct_type;
           MPI_Aint offset[6];
           offset[0] = offsetof(Particulas, x);
           offset[1] = offsetof(Particulas, y);
@@ -211,20 +182,21 @@
           buffer.resize(N/np);
           std::vector<double> Fuerzas;
           Fuerzas.resize(N/np);
-
-          int next = (pid+1)%np;
-          int prev = (pid-1+np)%np;
+          //ring
+          int next = (pid+1)%np;//siguiente proceso
+          int prev = (pid-1+np)%np;//anterior proceso
           if (pid == 0){
               XPropios(P,N,pid,np);
-              MPI_Send(&P[0], N/np,mpi_struct_type, next, tag, MPI_COMM_WORLD);
-              MPI_Recv(&buffer[0], N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+              MPI_Send(&P, N/np,mpi_struct_type, next, tag, MPI_COMM_WORLD);
+
+              MPI_Recv(&buffer, N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             }
             else {
               XPropios(P,N,pid,np);
-              MPI_Recv(&P[0],N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-              //XPrestados(P,N,buffer,pid,np);
-              MPI_Send(&buffer[0], N/np,mpi_struct_type , next, tag, MPI_COMM_WORLD);
+              MPI_Recv(&P,N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+              XPrestados(P,N,buffer,pid,np);
+              MPI_Send(&buffer, N/np,mpi_struct_type , next, tag, MPI_COMM_WORLD);
             }
 
         }
