@@ -25,7 +25,7 @@
         void XPropios(std::vector<Particulas> PR,int N,int pid ,int np);
         void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> &Bu,int pid ,int np);
 
-        void FParallelo(std::vector<Particulas> &planeta,int N,int pid,int np);
+        void FParallelo(std::vector<Particulas> planeta,int N,int pid,int np);
 
 
 
@@ -49,7 +49,7 @@
           int pid, np;
           MPI_Comm_rank(MPI_COMM_WORLD, &pid);
           MPI_Comm_size(MPI_COMM_WORLD, &np);
-
+          FParallelo(planeta,N,pid,np);
           MPI_Finalize();
 
 
@@ -220,7 +220,7 @@
               MPI_Recv(&buffer[0], N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             }
-             else {
+            else {
               XPropios(P,N,pid,np);
               MPI_Recv(&P[0],N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
               //XPrestados(P,N,buffer,pid,np);
