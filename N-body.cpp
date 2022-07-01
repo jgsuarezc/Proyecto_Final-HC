@@ -1,34 +1,15 @@
         #include<iostream>
         #include<cmath>
-        #include<random>
         #include<vector>
-        #include "mpi.h"
+        #include"D.hpp"
+        #include"Serial.h"
 
+        //#include "mpi.h"
 
-        //estructura que define las propiedad de la particula
-        struct Particulas{
-          double x,y;// posición del la particula
-          double Vx,Vy;//velocidad
-          double F;//fuerza sobre ella
-          double M=1;//masa  1(provicional)
-        };
+        //void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
+        //void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
 
-
-        double fuerza(double m1,double m2,double d); // Fuerza gravitacional
-        void posicion (std::vector<Particulas> &planeta,int N,double seed);//posición (modifica el vector por referencia)
-        //serie
-        void FuerzaT (std::vector<Particulas> &planeta,int N);//Fuerza Total
-        void imprimir(const std::vector<Particulas> &planeta,int N);// imprime en pantalla la posicion y la fuerza
-        //void FuerzaT2(double % M,const std::vector<Particulas> planeta, int N);//fuerza total array
-        // imprimir2(const double M,int N);
-
-        void XPropios(std::vector<Particulas> PR,int N,int pid ,int np);
-        void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> Bu,int pid ,int np);
-
-        void FParallelo(std::vector<Particulas> planeta,int N,int pid,int np);
-
-
-
+        //void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
 
         int main(int argc, char *argv[]) {
 
@@ -45,76 +26,19 @@
 
 
 
-          MPI_Init(&argc, &argv);
-          int pid, np;
-          MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-          MPI_Comm_size(MPI_COMM_WORLD, &np);
-          FParallelo(planeta,N,pid,np);
-          MPI_Finalize();
-
 
 
           return 0;
         }
 
 
-        //serial
-
-        //fuerza gravitacional
-        double fuerza(double m1,double m2,double d){
-
-          double G= 30;// constante de proporcionalidad de la fuerza
-          double F=(G*m1*m2)/std::pow(d,2);// fuerza gravitacional
-
-        return F;
-        }
-        //genera una posicion x e y aleatoria para las particulas
-        void posicion (std::vector<Particulas> &planeta,int N,double seed){
-
-          std::mt19937 gen(seed);
-          std::uniform_real_distribution<double> dis(0, 1.0);
-
-          //bucle for que me genera posiciones aleatorias para cada particula del vector
-          for (int ii = 0; ii < N; ++ii) {
-            planeta[ii].x = dis(gen);
-            planeta[ii].y = dis(gen);
-
-          }
-
-        }
-
-        void FuerzaT (std::vector<Particulas> &planeta,int N){
-          //fuerza Total sobre la particula
-          for (int ii = 0; ii < N; ii++) {
-            double sum=0;
-            for(int jj = 0; jj < N; jj++){
-
-              // para una particula suma las fuerzas debida a las demas  excepto ella misma
-                if(jj==ii){continue;}
-                  double M1T=planeta[ii].M;
-                  double M2T=planeta[jj].M;
-                  double dx=planeta[ii].x-planeta[jj].x;//distancia xi-xj
-                  double dy=planeta[ii].y-planeta[jj].y;//distancia yi-yj
-                  double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
-                  sum=sum + fuerza(M1T,M2T,d);//variable va sumando la fuerza sobre la particula Mi debida a las Mj con j distinto que i
-            }//fuerza x e y
-            planeta[ii].F=sum;
-          }
-
-        }
-        void imprimir(const std::vector<Particulas> &planeta,int N){
-          for (int ii = 0; ii< N; ++ii){
-            // imprime la posicion x e y junto a la fuerza
-            std::cout << planeta[ii].x << "\t"<< planeta[ii].y<< "\t"<< planeta[ii].F<<std::endl;
-          }
-        }
 
 
-
+/*
         // paralelizado
         // Suma lafuerza en paralelo
         //Funcion calcula las fuerzas de las particulas perteneciente al proceso
-        void XPropios  (std::vector<Particulas> PR,int N,int pid ,int np){
+        void XPropios  (const std::vector<Particulas> PR,int N,int pid ,int np){
           double sum;
         //fuerza debida a las n  particulas propias del proceso
         for (int ii = N*pid/np; ii < N*(pid+1)/np; ii++) {
@@ -135,7 +59,7 @@
 
         //calcula la fuerza debida a los posiciones recibidas que  guardo  en buffer
         }
-        void XPrestados(std::vector<Particulas> PR,int N,std::vector<Particulas> Bu,int pid ,int np){
+        void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np){
           double sum;
           //fuerza debida a las n  particulas recibidas
           for (int ii = 0; ii <= N*(pid+1)/np; ii++) {
@@ -154,7 +78,7 @@
 
         }
 
-        void FParallelo(std::vector<Particulas> planeta,int N,int pid,int np)
+        void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np)
         {
           //Nuevo Tipo de dato en MPI por medio de la estructura:
           const int nitems=6;
@@ -170,33 +94,34 @@
           offset[5] = offsetof(Particulas, M);
           MPI_Type_create_struct(nitems, len, offset, types, &mpi_struct_type);
           MPI_Type_commit(&mpi_struct_type);
+
           int tag =0;
           //N/np particulas para cada proceso
           std::vector<Particulas>P;
           P.resize(N/np);
+
           for(int ii=0;ii<N/np;ii++){
           P[ii]=planeta[(N*pid)+ii];
-          }
+        }
 
           std::vector<Particulas>buffer;
           buffer.resize(N/np);
-          std::vector<double> Fuerzas;
-          Fuerzas.resize(N/np);
           //ring
           int next = (pid+1)%np;//siguiente proceso
           int prev = (pid-1+np)%np;//anterior proceso
           if (pid == 0){
-              XPropios(P,N,pid,np);
-              MPI_Send(&P, N/np,mpi_struct_type, next, tag, MPI_COMM_WORLD);
+              //XPropios(P,N,pid,np);//calcula la fuerza de los N/np primeras particulas
+              MPI_Send(&P,N/np,mpi_struct_type, next, tag, MPI_COMM_WORLD);
 
-              MPI_Recv(&buffer, N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+              MPI_Recv(&buffer,N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             }
             else {
-              XPropios(P,N,pid,np);
-              MPI_Recv(&P,N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-              XPrestados(P,N,buffer,pid,np);
-              MPI_Send(&buffer, N/np,mpi_struct_type , next, tag, MPI_COMM_WORLD);
+              //XPropios(P,N,pid,np);
+              MPI_Recv(&buffer,N/np,mpi_struct_type, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+              //XPrestados(P,N,buffer,pid,np);
+              MPI_Send(&P,N/np,mpi_struct_type ,next, tag, MPI_COMM_WORLD);
             }
 
         }
+*/
