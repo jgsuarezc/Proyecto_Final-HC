@@ -8,7 +8,7 @@
         //void XPropios(const std::vector<Particulas> PR,int N);
         //void XPrestados(const std::vector<Particulas> PR,const std::vector<Particulas> Bu,int N);
 
-        void FParallelo(const std::vector<Particulas> planeta,int N,int np,int pid);
+        void FParallelo(int N,int np,int pid);
 
         int main(int argc, char *argv[]) {
 
@@ -25,7 +25,7 @@
           MPI_Init(&argc, &argv);
           int np, pid;
           MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-          //FParallelo(planeta,N,np,pid);
+          FParallelo(N,np,pid);
           MPI_Comm_size(MPI_COMM_WORLD, &np);
 
 
@@ -107,12 +107,12 @@
         }
 */
 
-  void FParallelo(const std::vector<Particulas> planeta,int N,int np,int pid)
+  void FParallelo(int N,int np,int pid)
         {
-          int tag =0;
+
           //Nuevo Tipo de dato en MPI por medio de la estructura:
-          const int nitems=6;
-          int len[6] = {1,2,3,4,5,6};
+          const int nitems=8;
+          int len[8] = {1,1,1,1,1,1,1,1};
           MPI_Datatype types[6] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
           MPI_Datatype mpi_SistemaP;
           MPI_Aint offset[6];
@@ -120,15 +120,18 @@
           offset[1] = offsetof(Particulas, y);
           offset[2] = offsetof(Particulas, Vx);
           offset[3] = offsetof(Particulas, Vy);
-          offset[4] = offsetof(Particulas, F);
-          offset[5] = offsetof(Particulas, M);
+          offset[4] = offsetof(Particulas, Fx);
+          offset[5] = offsetof(Particulas, Fy);
+          offset[6] = offsetof(Particulas, F);
+          offset[7] = offsetof(Particulas, M);
+
           MPI_Type_create_struct(nitems, len, offset, types, &mpi_SistemaP);
           MPI_Type_commit(&mpi_SistemaP);
-
+          int tag =0;
           int tamaño =N/np;
           std::vector<Particulas>Local;
           Local.resize(tamaño);
-          std::vector<Particulas>buffer;
+          std::vector<Particulas>buffer{};
           buffer.resize(tamaño);
           /*
 
@@ -150,7 +153,7 @@
             else {
 
               MPI_Recv(&buffer,tamaño,mpi_SistemaP, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+              
               MPI_Send(&Local,tamaño,mpi_SistemaP ,next, tag, MPI_COMM_WORLD);
             }
 
