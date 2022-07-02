@@ -1,5 +1,5 @@
 CXX =mpic++
-@CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
+CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
 A= Serial.cpp NBodyMPI.cpp
 
 ejecutable.x : $(A)
