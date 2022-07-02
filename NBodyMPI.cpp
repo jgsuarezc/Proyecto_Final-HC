@@ -4,6 +4,13 @@
 #include <vector>
 #include "mpi.h"
 
+/**
+ * Advertencias:
+ * Código se espera 2 particulas para cada proceso, de forma momentanea hasta que se
+ * pueda implementar generalidad. Por tanto, según N particulas, se deben poner N/2 = np
+ * número de procesos
+ */
+
 // estructura que define las propiedad de la particula
 struct Particulas
 {
@@ -22,12 +29,13 @@ MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
   MPI_Type_commit(&mpi_star);
 */
 
+std::vector<Particulas> planeta;
 double fuerza(double m1, double m2, double d);                       // Fuerza gravitacional
 void posicion(std::vector<Particulas> &planeta, int N, double seed); // posición (modifica el vector por referencia)
 // paralelo
-void FuerzaT(std::vector<Particulas> &planeta, int N, int pid, int np);        // Fuerza Total
-void imprimir(const std::vector<Particulas> &planeta, int N, int pid, int np); // imprime en pantalla la posicion y la fuerza
-void ring(int pid, int np);                                                    // Implementación de MPIring.
+void FuerzaT(std::vector<Particulas> &planeta, int N);        // Fuerza Total
+void imprimir(const std::vector<Particulas> &planeta, int N); // imprime en pantalla la posicion y la fuerza
+void ringFuerzas(int pid, int np, int N);                                                    // Implementación de MPIring.
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +44,6 @@ int main(int argc, char *argv[])
     int N = atoi(argv[1]);       // Numero de particulas
     double seed = atoi(argv[2]); // semilla genera la posicion aleatoria
     // vector con N particulas SERIALIZADO
-    std::vector<Particulas> planeta;
     planeta.resize(N);
     std::cout.precision(5); // precision de 5 cifras
     posicion(planeta, N, seed);
@@ -53,7 +60,7 @@ int main(int argc, char *argv[])
     MPI_Comm_size(MPI_COMM_WORLD, &np);
 
     // Construcción del ring.
-    ring(pid, np);
+    ringFuerzas(pid, np, N);
 
     MPI_Finalize();
 
@@ -69,61 +76,76 @@ int main(int argc, char *argv[])
  * @param pid
  * @param np
  */
-void ringFuerzas(int pid, int np)
+void ringFuerzas(int pid, int np, int N)
 {
     int tag = 0;
-    // 
-    std::vector<Double> val = {planeta[0].x, planeta[0].y, planeta[1].x, planeta[1].y, 0.0, 0.0, 0.0};
-    std::vector<Double> buf;
-    std::vector<Particulas> FPlaneta;
-    FPlanetas.resize(2);
-    buf.resize(7);
+    int size = 4 + N;
+    // Orden (r: Posición, F: Fuerza): r1_x, r1_y, r2_x, r2_y, F1_x, F1_y, F2_x, F2_y...
+    double buf[size];
+    double val[size];
+    val[0] = planeta[0].x;
+    val[1] = planeta[0].y;
+    val[0] = planeta[0].x;[2] = planeta[1].x;
+    val[0] = planeta[0].x;[3] = planeta[1].y;
     int next = (pid + 1) % np;
     int prev = (pid - 1 + np) % np;
 
     double start = MPI_Wtime();
     if (pid == 0)
     {
-        MPI_Send(&pid, 1, MPI_INT, next, tag, MPI_COMM_WORLD);
-        Particulas p1, p2;
-        p1.x = val[0];
-        p1.y = val[1];
-        p2.x = val[2];
-        p2.y = val[3];
-        FPlaneta.push_back(p1);
-        FPlaneta.push_back(p2);
-        double dx = p1.x - p2.x; // distancia xi-xj
-        double dy = p1.y - p2.y; // distancia yi-yj
+        // Para el proceso 1: Enviar a val, buf tiene que traerme el dato después de la vuelta.
+        double dx = val[2] - val[0]; // distancia xi-xj
+        double dy = val[3] - val[1]; // distancia yi-yj
         double d = sqrt(dx * dx + dy * dy);
         double F = fuerza(1, 1, d);
-        val 
-        MPI_Recv(&buf, 1, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        val[4] = F;
+        val[5] = -F * dx / d;
+        val[6] = -F * dy / d;
+        val[7] = F * dx / d;
+        val[8] = F * dy / d;
+        val[0] = planeta[2].x;
+        val[1] = planeta[2].y;
+        val[2] = planeta[3].x;
+        val[3] = planeta[3].y;
+        MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
+        MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
     else
     { // pid != 0
-        MPI_Recv(&buf, 1, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        FuerzaT();
-        MPI_Send(&val, 1, MPI_INT, next, tag, MPI_COMM_WORLD);
+        MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // double dx = buf[2] - buf[0]; // distancia xi-xj
+        // double dy = buf[3] - buf[1]; // distancia yi-yj
+        // double d = sqrt()dx * dx) + (dy * dy));
+        // double F = fuerza(1, 1, d);
+        // buf[4] = F;
+        // buf[5] = (-F * dx / d) + ;
+        // buf[6] = (-F * dy / d) + val[6];
+        // buf[7] = F * dx / d;
+        // buf[8] = F * dy / d;
+        // buf[0] = planeta[2 * pid + 2)].x;
+        // buf[1] = planeta[2 * pid + 2].x;
+        // buf[2] = planeta[2 * pid + 3].x;
+        // buf[3] = planeta[2 * pid + 3].x;
+        MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
     }
     // Cálculo del tiempo de cómputo total.
     double end = MPI_Wtime();
-    totaltime = end - start;
+    int totaltime = end - start;
 
     if (pid == 0)
     {
         std::cout << "Fuerza aplicada a cada cuerpo:" << std::endl;
         std::cout << "Fuerza inicial: "
-                  << "\t" <<
+                  << "\t" ;
     }
-    else
-    {
-        std::cout << "Tiempo total: " << totaltime << std::endl;
-        // std::cout << "totaltime/nsteps: " << totaltime / nsteps << std::endl;
-    }
+    // else
+    // {
+    //     std::cout << "Tiempo total: " << totaltime << std::endl;
+    //     // std::cout << "totaltime/nsteps: " << totaltime / nsteps << std::endl;
+    // }
 }
 
-// serial
-
+// SERIAL
 // fuerza gravitacional
 double fuerza(double m1, double m2, double d)
 {
