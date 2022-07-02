@@ -37,24 +37,39 @@ int main(int argc, char *argv[]){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   void FParallelo(int N,int np,int pid){
     //calcula la furza en paralelo por medio de un anillo
-    double Tam=N/np;//numero de particulas que le corresponderia a cada proceso
+    int Tam=N/np;//numero de particulas que le corresponderia a cada proceso
     int tag =0;
     double Local[2*Tam];//dos datos que voy a pasar x e y por lo tanto  2*(N/np)
-    double Buffer[2*Tam];
+    double buffer[2*Tam];
     int siguiente = (pid+1)%np;// proceso siguiente
     int anterior = (pid-1+np)%np;// proceso anterior
     if(pid==0){
-        MPI_Send(&Local,2*Tam,MPI_INT_type, siguiente, tag, MPI_COMM_WORLD);
+        MPI_Send(&Local,2*Tam,MPI_INT, siguiente, tag, MPI_COMM_WORLD);
 
-        MPI_Recv(&buffer,2*Tam,MPI_INT_type, anterior, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&buffer,2*Tam,MPI_INT, anterior, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
       }
       else {
-        MPI_Recv(&buffer,2*Tam,MPI_INT_type, anterior, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&buffer,2*Tam,MPI_INT, anterior, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        MPI_Send(&Local,2*Tam,MPI_INT_type ,siguiente, tag, MPI_COMM_WORLD);
+        MPI_Send(&Local,2*Tam,MPI_INT,siguiente, tag, MPI_COMM_WORLD);
       }
 
   }
