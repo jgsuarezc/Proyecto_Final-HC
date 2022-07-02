@@ -1,8 +1,6 @@
-CXX=g++
+CXX =mpic++
 CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
+A= Serial.cpp N-body.cpp
 
-
-ejecutable.x : N-body.cpp
-			$(CXX) $(CXXFLAGS) $< -o $@
-clean :
-			rm datos.txt ejecutable.x
+ejecutable.x : $(A)
+	$(CXX) $(CXXFLAGS ) $(A) -o ejecutable.x

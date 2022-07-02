@@ -2,7 +2,6 @@
 #include <cmath>
 #include <random>
 #include <vector>
-#include "mpi.h"
 
 // estructura que define las propiedad de la particula
 struct Particulas
