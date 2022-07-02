@@ -82,8 +82,9 @@ int main(int argc, char *argv[])
 void ringFuerzas(int pid, int np, int N)
 {
     int tag = 0;
-    int size = 5 + 2 * N;
-    // Orden (r: Posición, F: Fuerza): r1_x, r1_y, r2_x, r2_y, F1_x, F1_y, F2_x, F2_y...
+    int size = 4 + 2 * N;
+    int totaltime = 0;
+    // Orden (r: Posición, F: Fuerza): r1_x, r1_y, r2_x, r2_y, F1_x, F1_y, F2_x, F2_y... Fn_
     double buf[size];
     double val[size];
     val[0] = planeta[0].x;
@@ -97,39 +98,19 @@ void ringFuerzas(int pid, int np, int N)
     if (pid == 0)
     {
         // Para el proceso 1: Enviar a val, buf tiene que traerme el dato después de la vuelta.
-        // for (int ii = 0; ii < N; ii++)
-        // {
-        //     double sum = 0;
-        //     double sumx = 0;
-        //     double sumy = 0;
-        //     for (int jj = 0; jj < N; jj++)
-        //     {
-        //         // para una particula suma las fuerzas debida a las demas  excepto ella misma
-        //         if (jj == ii)
-        //         {
-        //             continue;
-        //         }
-        //         double dx = planeta[ii].x - planeta[jj].x; // distancia xi-xj
-        //         double dy = planeta[ii].y - planeta[jj].y; // distancia yi-yj
-        //         double d = sqrt(dx * dx + dy * dy);        // distancia al cuadrado
-        //         sum = sum + fuerza(M1T, M2T, d);           // variable va sumando la fuerza sobre la particula Mi debida a las Mj con j distinto que i
-        //         sumx = sumx - fuerza(M1T, M2T, d) * dx / d;
-        //         sumy = sumy - fuerza(M1T, M2T, d) * dy / d;
-        //     }
-        //     planeta[ii].F = sum;
-        //     planeta[ii].Fx = sumx;
-        //     planeta[ii].Fy = sumy;
-        // }
-
-        double dx = val[2] - val[0]; // distancia xi-xj
-        double dy = val[3] - val[1]; // distancia yi-yj
-        double d = sqrt(dx * dx + dy * dy);
-        double F = fuerza(1, 1, d);
-        val[4] = F;
-        val[5] = -F * dx / d;
-        val[6] = -F * dy / d;
-        val[7] = F * dx / d;
-        val[8] = F * dy / d;
+        val[4] = 0;
+        val[5] = 0;
+        for (int ii = 2; ii < N; ii++)
+        {
+            double dx = val[2] - val[0]; // distancia xi-xj
+            double dy = val[3] - val[1]; // distancia yi-yj
+            double d = sqrt(dx * dx + dy * dy);
+            double F = fuerza(1, 1, d);
+            val[4] += -F * dx / d;
+            val[5] += -F * dy / d;
+            val[2] = planeta[ii].x;
+            val[3] = planeta[ii].y;
+        }
         val[0] = planeta[2].x;
         val[1] = planeta[2].y;
         val[2] = planeta[3].x;
@@ -137,31 +118,38 @@ void ringFuerzas(int pid, int np, int N)
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    if (pid == 1)
+    else
     {
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        double dx = buf[2] - buf[0]; // distancia xi-xj
-        double dy = buf[3] - buf[1]; // distancia yi-yj
-        double d = sqrt(dx * dx) + (dy * dy));
-        double F = fuerza(1, 1, d);
-        buf[4] = F;
-        buf[5] = (-F * dx / d);
-        buf[6] = (-F * dy / d);
-        buf[7] = F * dx / d;
-        buf[8] = F * dy / d;
-        buf[0] = planeta[2 * pid + 2].x;
-        buf[1] = planeta[2 * pid + 2].x;
-        buf[2] = planeta[2 * pid + 3].x;
-        buf[3] = planeta[2 * pid + 3].x;
+        for (int ii = 0; ii < N; ii++)
+        {
+            double dx = buf[2] - buf[0]; // distancia xi-xj
+            double dy = buf[3] - buf[1]; // distancia yi-yj
+            if (dx == 0 || dy == 0)
+            {
+                continue;
+            }
+            double d = sqrt(dx * dx + dy * dy);
+            double F = fuerza(1, 1, d);
+            val[2 * pid + 4] += -F * dx / d;
+            val[2 * pid + 5] += -F * dy / d;
+            val[2] = planeta[ii].x;
+            val[3] = planeta[ii].y;
+        }
+        val[0] = planeta[2 * pid + 2].x; // 
+        val[1] = planeta[2 * pid + 2].y;
+        val[2] = planeta[2 * pid + 3].x;
+        val[3] = planeta[2 * pid + 3].y;
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
     }
     // Cálculo del tiempo de cómputo total.
     double end = MPI_Wtime();
-    int totaltime = end - start;
+    totaltime += end - start;
 
     if (pid == 0)
     {
         std::cout << "Fuerza aplicada a cada cuerpo: (pid == 0, cuando dió la vuelta) " << std::endl;
+        std::cout << "F -   Fx1 -   Fy1 -   Fx2 -   Fy2" << std::endl;
         for (int i = 0; i < size; i++)
         {
             std::cout << buf[i] << " ";
