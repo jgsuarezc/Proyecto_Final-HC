@@ -31,6 +31,16 @@ int main(int argc, char *argv[]){
       }
     }
 
+    MPI_Init(&argc, &argv);
+    int np, pid;
+    MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+    //FParallelo(planeta,N,pid,np);
+    MPI_Comm_size(MPI_COMM_WORLD, &np);
+      FParallelo(N,np,pid);
+
+    MPI_Finalize();
+
+
 
     return 0;
   }
