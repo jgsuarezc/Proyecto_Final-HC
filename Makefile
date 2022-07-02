@@ -1,9 +1,6 @@
-SHELL:=/bin/zsh
-CXX=g++
+CXX =mpic++
 CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
+A= Serial.cpp N-body.cpp
 
-
-ejecutable.x : NBody.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
-clean :
-	rm datos.txt ejecutable.x
+ejecutable.x : $(A)
+	$(CXX) $(CXXFLAGS ) $(A) -o ejecutable.x
