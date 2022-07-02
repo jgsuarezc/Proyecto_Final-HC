@@ -8,10 +8,6 @@
 void FParallelo(int N,int np,int pid);
 
 int main(int argc, char *argv[]){
-  int N=atoi(argv[1]);//Numero de particulas
-  double seed=atoi(argv[2]);//semilla genera la posicion aleatoria
-
-
     std::vector<Particulas>planeta;
     planeta.resize(N);
     posicion(planeta,N,seed);//llena aleatoriamente
@@ -31,12 +27,15 @@ int main(int argc, char *argv[]){
       }
     }
 
-    MPI_Init(&argc, &argv);
+
+
     int np, pid;
+    MPI_Init(&argc, &argv);
+    void ring(int pid, int np);
     MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-    //FParallelo(planeta,N,pid,np);
+    FParallelo(N,np,pid);
     MPI_Comm_size(MPI_COMM_WORLD, &np);
-      FParallelo(N,np,pid);
+
 
     MPI_Finalize();
 
@@ -44,22 +43,6 @@ int main(int argc, char *argv[]){
 
     return 0;
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   void FParallelo(int N,int np,int pid){
