@@ -16,8 +16,10 @@ struct Particulas
 {
     double x, y;   // posición del la particula
     double Vx, Vy; // velocidad
-    double F;      // fuerza sobre ella
-    double M = 1;  // masa 1 (provicional)
+    double F;
+    double Fx; // fuerza sobre ella
+    double Fy;
+    double M = 1; // masa 1 (provicional)
 };
 
 /*
@@ -36,7 +38,7 @@ void posicion(std::vector<Particulas> &planeta, int N, double seed); // posició
 // paralelo
 void FuerzaT(std::vector<Particulas> &planeta, int N);        // Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta, int N); // imprime en pantalla la posicion y la fuerza
-void ringFuerzas(int pid, int np, int N);                                                    // Implementación de MPIring.
+void ringFuerzas(int pid, int np, int N);                     // Implementación de MPIring.
 
 int main(int argc, char *argv[])
 {
@@ -95,6 +97,30 @@ void ringFuerzas(int pid, int np, int N)
     if (pid == 0)
     {
         // Para el proceso 1: Enviar a val, buf tiene que traerme el dato después de la vuelta.
+        // for (int ii = 0; ii < N; ii++)
+        // {
+        //     double sum = 0;
+        //     double sumx = 0;
+        //     double sumy = 0;
+        //     for (int jj = 0; jj < N; jj++)
+        //     {
+        //         // para una particula suma las fuerzas debida a las demas  excepto ella misma
+        //         if (jj == ii)
+        //         {
+        //             continue;
+        //         }
+        //         double dx = planeta[ii].x - planeta[jj].x; // distancia xi-xj
+        //         double dy = planeta[ii].y - planeta[jj].y; // distancia yi-yj
+        //         double d = sqrt(dx * dx + dy * dy);        // distancia al cuadrado
+        //         sum = sum + fuerza(M1T, M2T, d);           // variable va sumando la fuerza sobre la particula Mi debida a las Mj con j distinto que i
+        //         sumx = sumx - fuerza(M1T, M2T, d) * dx / d;
+        //         sumy = sumy - fuerza(M1T, M2T, d) * dy / d;
+        //     }
+        //     planeta[ii].F = sum;
+        //     planeta[ii].Fx = sumx;
+        //     planeta[ii].Fy = sumy;
+        // }
+
         double dx = val[2] - val[0]; // distancia xi-xj
         double dy = val[3] - val[1]; // distancia yi-yj
         double d = sqrt(dx * dx + dy * dy);
@@ -111,22 +137,22 @@ void ringFuerzas(int pid, int np, int N)
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    if(pid == 1)
+    if (pid == 1)
     {
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        // double dx = buf[2] - buf[0]; // distancia xi-xj
-        // double dy = buf[3] - buf[1]; // distancia yi-yj
-        // double d = sqrt(dx * dx) + (dy * dy));
-        // double F = fuerza(1, 1, d);
-        // buf[4] = F;
-        // buf[5] = (-F * dx / d) + ;
-        // buf[6] = (-F * dy / d) + val[6];
-        // buf[7] = F * dx / d;
-        // buf[8] = F * dy / d;
-        // buf[0] = planeta[2 * pid + 2].x;
-        // buf[1] = planeta[2 * pid + 2].x;
-        // buf[2] = planeta[2 * pid + 3].x;
-        // buf[3] = planeta[2 * pid + 3].x;
+        double dx = buf[2] - buf[0]; // distancia xi-xj
+        double dy = buf[3] - buf[1]; // distancia yi-yj
+        double d = sqrt(dx * dx) + (dy * dy));
+        double F = fuerza(1, 1, d);
+        buf[4] = F;
+        buf[5] = (-F * dx / d);
+        buf[6] = (-F * dy / d);
+        buf[7] = F * dx / d;
+        buf[8] = F * dy / d;
+        buf[0] = planeta[2 * pid + 2].x;
+        buf[1] = planeta[2 * pid + 2].x;
+        buf[2] = planeta[2 * pid + 3].x;
+        buf[3] = planeta[2 * pid + 3].x;
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
     }
     // Cálculo del tiempo de cómputo total.
@@ -135,7 +161,7 @@ void ringFuerzas(int pid, int np, int N)
 
     if (pid == 0)
     {
-        std::cout << "Fuerza aplicada a cada cuerpo: (pid == 0) " << std::endl;
+        std::cout << "Fuerza aplicada a cada cuerpo: (pid == 0, cuando dió la vuelta) " << std::endl;
         for (int i = 0; i < size; i++)
         {
             std::cout << buf[i] << " ";
@@ -143,7 +169,7 @@ void ringFuerzas(int pid, int np, int N)
         std::cout << std::endl;
 
         std::cout << "Tiempo total: " << totaltime << std::endl;
-        
+        std::cout << "Tiempo respecto cada proceso : " << totaltime / np << std::endl;
     }
     // else
     // {
@@ -157,7 +183,7 @@ void ringFuerzas(int pid, int np, int N)
 double fuerza(double m1, double m2, double d)
 {
 
-    double G = 6.67384 * pow(10, -11);  // constante de proporcionalidad de la fuerza
+    double G = 6.67384 * pow(10, -11);         // constante de proporcionalidad de la fuerza
     double F = (G * m1 * m2) / std::pow(d, 2); // fuerza gravitacional
 
     return F;
@@ -181,7 +207,7 @@ void posicion(std::vector<Particulas> &planeta, int N, double seed)
 // double[3] FuerzaN (double r1x, double r1y, double r2x, double r2y){
 
 //     double fuerzas[3] = {F, Fx, Fy};
-//     return 
+//     return
 // }
 
 void FuerzaT(std::vector<Particulas> &planeta, int N)
@@ -190,6 +216,8 @@ void FuerzaT(std::vector<Particulas> &planeta, int N)
     for (int ii = 0; ii < N; ii++)
     {
         double sum = 0;
+        double sumx = 0;
+        double sumy = 0;
         for (int jj = 0; jj < N; jj++)
         {
 
@@ -204,8 +232,12 @@ void FuerzaT(std::vector<Particulas> &planeta, int N)
             double dy = planeta[ii].y - planeta[jj].y; // distancia yi-yj
             double d = sqrt(dx * dx + dy * dy);        // distancia al cuadrado
             sum = sum + fuerza(M1T, M2T, d);           // variable va sumando la fuerza sobre la particula Mi debida a las Mj con j distinto que i
+            sumx = sumx - fuerza(M1T, M2T, d) * dx / d;
+            sumy = sumy - fuerza(M1T, M2T, d) * dy / d;
         }
         planeta[ii].F = sum;
+        planeta[ii].Fx = sumx;
+        planeta[ii].Fy = sumy;
     }
 }
 void imprimir(const std::vector<Particulas> &planeta, int N)
@@ -213,6 +245,6 @@ void imprimir(const std::vector<Particulas> &planeta, int N)
     for (int ii = 0; ii < N; ++ii)
     {
         // imprime la posicion x e y junto a la fuerza
-        std::cout << planeta[ii].x << "\t" << planeta[ii].y << "\t" << planeta[ii].F << std::endl;
+        std::cout << planeta[ii].x << "\t" << planeta[ii].y << "\t" << planeta[ii].Fx << "\t" << planeta[ii].Fy << std::endl;
     }
 }
