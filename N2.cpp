@@ -8,6 +8,12 @@
 void FParallelo(int N,int np,int pid);
 
 int main(int argc, char *argv[]){
+  //recibe por consola
+    int N=atoi(argv[1]);//Numero de particulas
+    double seed=atoi(argv[2]);//semilla genera la posicion aleatoria
+
+
+
     std::vector<Particulas>planeta;
     planeta.resize(N);
     posicion(planeta,N,seed);//llena aleatoriamente
