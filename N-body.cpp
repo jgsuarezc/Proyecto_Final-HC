@@ -8,7 +8,7 @@
         //void XPropios(const std::vector<Particulas> PR,int N);
         //void XPrestados(const std::vector<Particulas> PR,const std::vector<Particulas> Bu,int N);
 
-        void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
+        void FParallelo(const std::vector<Particulas> planeta,int N,int np,int pid);
 
         int main(int argc, char *argv[]) {
 
@@ -19,13 +19,13 @@
           std::vector<Particulas>planeta;
           planeta.resize(N);
           posicion(planeta,N,seed);//llena aleatoriamente
-          FuerzaT(planeta,N);//calcula la component x e y de la fuerza
-          imprimir(planeta,N);//imprime en pantalla
+          //FuerzaT(planeta,N);//calcula la component x e y de la fuerza
+          //imprimir(planeta,N);//imprime en pantalla
 
           MPI_Init(&argc, &argv);
           int np, pid;
           MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-          //FParallelo(planeta,N,pid,np);
+          //FParallelo(planeta,N,np,pid);
           MPI_Comm_size(MPI_COMM_WORLD, &np);
 
 
@@ -107,8 +107,9 @@
         }
 */
 
-  void FParallelo(const std::vector<Particulas> planeta,,int pid,int np)
+  void FParallelo(const std::vector<Particulas> planeta,int N,int np,int pid)
         {
+          int tag =0;
           //Nuevo Tipo de dato en MPI por medio de la estructura:
           const int nitems=6;
           int len[6] = {1,2,3,4,5,6};
@@ -124,19 +125,18 @@
           MPI_Type_create_struct(nitems, len, offset, types, &mpi_SistemaP);
           MPI_Type_commit(&mpi_SistemaP);
 
-          int tag =0;
           int tamaño =N/np;
-
           std::vector<Particulas>Local;
-          Local.resize(Tamaño);
+          Local.resize(tamaño);
+          std::vector<Particulas>buffer;
+          buffer.resize(tamaño);
+          /*
+
           //toma las N particulas y las reparte en los n-procesos
          for(int ii=0;ii<tamaño;ii++){
           Local[ii]=planeta[(N*pid)+ii];
           }
-
-          std::vector<Particulas>buffer;
-          buffer.resize(N/np);
-
+          */
           //ring
           int next = (pid+1)%np;//siguiente proceso
           int prev = (pid-1+np)%np;//anterior proceso
