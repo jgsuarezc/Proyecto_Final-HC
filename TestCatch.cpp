@@ -20,16 +20,17 @@ TEST_CASE( "Fuerza entre dos particulas", "Finterna" ) {
   std::vector<Particulas> prueba;
   prueba.resize(2);
   Particulas M1;
-  M1.x=1;
-  M1.y=2;
+  M1.x=111341;
+  M1.y=214343;
   Particulas M2;
-  M1.x=1;
-  M1.y=0;
+  M1.x=141234;
+  M1.y=133;
   prueba[0]=M1;
   prueba[1]=M2;
   FuerzaT(prueba,2);
+  
 
-  REQUIRE(prueba[0].F==1);
-  REQUIRE(prueba[1].F==1);
+  REQUIRE(std::abs(prueba[0].Fx==prueba[1].Fx)<0.001);
+  REQUIRE(std::abs(prueba[0].Fx==prueba[1].Fx)<0.001);
 
 }
