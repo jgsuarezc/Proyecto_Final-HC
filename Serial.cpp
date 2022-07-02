@@ -30,9 +30,14 @@ void posicion (std::vector<Particulas> &planeta,int N,double seed){
 }
 
 void FuerzaT (std::vector<Particulas> &planeta,int N){
+  double G=1;
+  double K=9*10E9;//carga electrica
   //fuerza Total sobre la particula
+
+
   for (int ii = 0; ii < N; ii++) {
-    double sum=0;
+    double sumx=0;
+    double sumy=0;
     for(int jj = 0; jj < N; jj++){
 
       // para una particula suma las fuerzas debida a las demas  excepto ella misma
@@ -42,15 +47,20 @@ void FuerzaT (std::vector<Particulas> &planeta,int N){
           double dx=planeta[ii].x-planeta[jj].x;//distancia xi-xj
           double dy=planeta[ii].y-planeta[jj].y;//distancia yi-yj
           double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
-          sum=sum + fuerza(M1T,M2T,d);//variable va sumando la fuerza sobre la particula Mi debida a las Mj con j distinto que i
-    }//fuerza x e y
-    planeta[ii].F=sum;
+          double d3=d*d*d;
+          sumx=(G*(M1T*M2T)/(d3))*dx+sumx;//sumando la fuerza en x debida a las otras particulas
+          sumy=(G*(M1T*M2T)/(d3))*dy+sumy;//sumando la fuerza en y debida a las otras particulas
+          ;
+    }
+
+    planeta[ii].Fx=sumx;//fuerza en x
+    planeta[ii].Fy=sumy;//fuerza en y
   }
 
 }
 void imprimir(const std::vector<Particulas> &planeta,int N){
   for (int ii = 0; ii< N; ++ii){
     // imprime la posicion x e y junto a la fuerza
-    std::cout << planeta[ii].x << "\t"<< planeta[ii].y<< "\t"<< planeta[ii].F<<std::endl;
+    std::cout << planeta[ii].x << "\t"<< planeta[ii].y<<"\t"<< planeta[ii].Fx<<"\t"<< planeta[ii].Fy<<std::endl;
   }
 }

@@ -3,12 +3,12 @@
         #include<vector>
         #include"D.hpp"
         #include"Serial.h"
-        #include "mpi.h"
+        //#include "mpi.h"
 
-        void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
-        void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
+      //  void XPropios(const std::vector<Particulas> PR,int N,int pid ,int np);
+      //  void XPrestados(const std::vector<Particulas> PR,int N,const std::vector<Particulas> Bu,int pid ,int np);
 
-        void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
+      //  void FParallelo(const std::vector<Particulas> planeta,int N,int pid,int np);
 
         int main(int argc, char *argv[]) {
 
@@ -18,15 +18,14 @@
           //vector con N particulas
           std::vector<Particulas>planeta;
           planeta.resize(N);
-          std::cout.precision(5);// precision de 5 cifras
-          posicion(planeta,N,seed);
-          FuerzaT(planeta,N);
-          imprimir(planeta,N);
-          int np, pid;
-          MPI_Init(&argc, &argv);
+          posicion(planeta,N,seed);//llena aleatoriamente
+          FuerzaT(planeta,N);//calcula la component x e y de la fuerza
+          imprimir(planeta,N);//imprime en pantalla
 
+          MPI_Init(&argc, &argv);
+          int np, pid;
           MPI_Comm_rank(MPI_COMM_WORLD, &pid);
-          FParallelo(planeta,N,pid,np);
+          //FParallelo(planeta,N,pid,np);
           MPI_Comm_size(MPI_COMM_WORLD, &np);
 
 
