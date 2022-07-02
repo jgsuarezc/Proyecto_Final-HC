@@ -33,7 +33,7 @@ TEST_CASE( "Fuerza entre dos particulas", "Finterna" ) {
   //verifica que para un par de particulas aleatorias cumpla que sea igual
   std::vector<Particulas> prueba2;
   prueba.resize(2);
-  posicion(prueba2,2,seed);
+  posicion(prueba2,2,3);
   FuerzaT(prueba2,2);
 
 
