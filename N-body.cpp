@@ -111,50 +111,93 @@
         {
 
           //Nuevo Tipo de dato en MPI por medio de la estructura:
-          const int nitems=8;
-          int len[8] = {1,1,1,1,1,1,1,1};
-          MPI_Datatype types[6] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE};
+          const int nitems=2;
+          int len[2] = {1,1};
+          MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE};
           MPI_Datatype mpi_SistemaP;
-          MPI_Aint offset[6];
+          MPI_Aint offset[2];
           offset[0] = offsetof(Particulas, x);
           offset[1] = offsetof(Particulas, y);
-          offset[2] = offsetof(Particulas, Vx);
-          offset[3] = offsetof(Particulas, Vy);
-          offset[4] = offsetof(Particulas, Fx);
-          offset[5] = offsetof(Particulas, Fy);
-          offset[6] = offsetof(Particulas, F);
-          offset[7] = offsetof(Particulas, M);
-
           MPI_Type_create_struct(nitems, len, offset, types, &mpi_SistemaP);
           MPI_Type_commit(&mpi_SistemaP);
-          int tag =0;
-          int tamaño =N/np;
-          std::vector<Particulas>Local;
-          Local.resize(tamaño);
-          std::vector<Particulas>buffer{};
-          buffer.resize(tamaño);
-          /*
+          int tag = 0;
+          double totaltime = 0;
+          std::vector<Particulas> val;
+          val.resize(np);
 
-          //toma las N particulas y las reparte en los n-procesos
-         for(int ii=0;ii<tamaño;ii++){
-          Local[ii]=planeta[(N*pid)+ii];
+          std::vector<Particulas> buf;
+          buf.resize(np);
+
+          int next = (pid + 1) % np;
+          int prev = (pid - 1 + np) % np;
+          double start = MPI_Wtime();
+          if (pid == 0)
+          {
+            MPI_Send(val, np, mpi_SistemaP, next, tag, MPI_COMM_WORLD);
+            MPI_Recv(buf, np, mpi_SistemaP, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
           }
-          */
-          //ring
-          int next = (pid+1)%np;//siguiente proceso
-          int prev = (pid-1+np)%np;//anterior proceso
-          if (pid == 0){
-
-              MPI_Send(&Local,tamaño,mpi_SistemaP, next, tag, MPI_COMM_WORLD);
-
-              MPI_Recv(&buffer,tamaño,mpi_SistemaP, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+          else
+          { // pid != 0
+            MPI_Recv(buf, np, mpi_SistemaP, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < np; i++)
+            {
+              val[i].x = buf[i].y + 1;
             }
-            else {
+            MPI_Send(val, np, mpi_SistemaP, next, tag, MPI_COMM_WORLD);
+          }
+          double end = MPI_Wtime();
+          totaltime += end - start;
 
-              MPI_Recv(&buffer,tamaño,mpi_SistemaP, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-              
-              MPI_Send(&Local,tamaño,mpi_SistemaP ,next, tag, MPI_COMM_WORLD);
+          if (pid == 0)
+          {
+            std::cout << "totaltime: " << totaltime << std::endl;
+            std::cout << "0 buf: " << buf << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << buf[i] << ", ";
             }
+            std::cout << std::endl;
+            std::cout << "0 val1: " << val << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << val[i] << "\t";
+            }
+            std::cout << std::endl;
+          }
+            if (pid == 1)
+          {
+            std::cout << "totaltime: " << totaltime << std::endl;
+            std::cout << "1 buf: " << buf << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << buf[i] << ", ";
+            }
+            std::cout << std::endl;
+            std::cout << "1 val1: " << val << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << val[i] << "\t";
+            }
+            std::cout << std::endl;
+          }
+              if (pid == 2)
+          {
+            std::cout << "totaltime: " << totaltime << std::endl;
+            std::cout << "2 buf: " << buf << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << buf[i] << ", ";
+            }
+            std::cout << std::endl;
+            std::cout << "2 val1: " << val << std::endl;
+            for (int i = 0; i < np; i++)
+            {
+              std::cout << val[i] << "\t";
+            }
+            std::cout << std::endl;
 
         }
+
+
+
+FLocal(double A[array];int tamaño;jj)
