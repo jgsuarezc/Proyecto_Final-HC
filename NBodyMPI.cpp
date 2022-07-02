@@ -27,7 +27,7 @@ void posicion(std::vector<Particulas> &planeta, int N, double seed); // posició
 // paralelo
 void FuerzaT(std::vector<Particulas> &planeta, int N, int pid, int np);        // Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta, int N, int pid, int np); // imprime en pantalla la posicion y la fuerza
-void ring(int nreps, int pid, int np);                                         // Implementación de MPIring.
+void ring(int pid, int np);                                                    // Implementación de MPIring.
 
 int main(int argc, char *argv[])
 {
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
  * @brief Usando estructura de Ring MPI para paralelización.
  * Se permite utilizar MPIring para hallar las fuerzas en proceso
  * cíclico, para cada N Cuerpo y suma las fuerzas.
+ * Implementación para N = 2.
  *
  * @param pid
  * @param np
@@ -71,9 +72,12 @@ int main(int argc, char *argv[])
 void ringFuerzas(int pid, int np)
 {
     int tag = 0;
+    // 
     std::vector<Double> val = {planeta[0].x, planeta[0].y, planeta[1].x, planeta[1].y, 0.0, 0.0, 0.0};
     std::vector<Double> buf;
-    buf.resize(5);
+    std::vector<Particulas> FPlaneta;
+    FPlanetas.resize(2);
+    buf.resize(7);
     int next = (pid + 1) % np;
     int prev = (pid - 1 + np) % np;
 
@@ -81,23 +85,37 @@ void ringFuerzas(int pid, int np)
     if (pid == 0)
     {
         MPI_Send(&pid, 1, MPI_INT, next, tag, MPI_COMM_WORLD);
+        Particulas p1, p2;
+        p1.x = val[0];
+        p1.y = val[1];
+        p2.x = val[2];
+        p2.y = val[3];
+        FPlaneta.push_back(p1);
+        FPlaneta.push_back(p2);
+        double dx = p1.x - p2.x; // distancia xi-xj
+        double dy = p1.y - p2.y; // distancia yi-yj
+        double d = sqrt(dx * dx + dy * dy);
+        double F = fuerza(1, 1, d);
+        val 
         MPI_Recv(&buf, 1, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
     else
     { // pid != 0
         MPI_Recv(&buf, 1, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        FuerzaT()
+        FuerzaT();
         MPI_Send(&val, 1, MPI_INT, next, tag, MPI_COMM_WORLD);
     }
     // Cálculo del tiempo de cómputo total.
     double end = MPI_Wtime();
-    totaltime = end-start;
+    totaltime = end - start;
 
     if (pid == 0)
     {
         std::cout << "Fuerza aplicada a cada cuerpo:" << std::endl;
-        std::cout << "Fuerza inicial: " << "\t" << 
-    }else
+        std::cout << "Fuerza inicial: "
+                  << "\t" <<
+    }
+    else
     {
         std::cout << "Tiempo total: " << totaltime << std::endl;
         // std::cout << "totaltime/nsteps: " << totaltime / nsteps << std::endl;
