@@ -30,6 +30,7 @@ MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 */
 
 std::vector<Particulas> planeta;
+double[3] FuerzaN (double r1x, double r1y, double r2x, double r2y)
 double fuerza(double m1, double m2, double d);                       // Fuerza gravitacional
 void posicion(std::vector<Particulas> &planeta, int N, double seed); // posición (modifica el vector por referencia)
 // paralelo
@@ -79,14 +80,14 @@ int main(int argc, char *argv[])
 void ringFuerzas(int pid, int np, int N)
 {
     int tag = 0;
-    int size = 4 + N;
+    int size = 5 + 2 * N;
     // Orden (r: Posición, F: Fuerza): r1_x, r1_y, r2_x, r2_y, F1_x, F1_y, F2_x, F2_y...
     double buf[size];
     double val[size];
     val[0] = planeta[0].x;
     val[1] = planeta[0].y;
-    val[0] = planeta[0].x;[2] = planeta[1].x;
-    val[0] = planeta[0].x;[3] = planeta[1].y;
+    val[2] = planeta[1].x;
+    val[3] = planeta[1].y;
     int next = (pid + 1) % np;
     int prev = (pid - 1 + np) % np;
 
@@ -110,22 +111,22 @@ void ringFuerzas(int pid, int np, int N)
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     }
-    else
-    { // pid != 0
+    if(pid == 1)
+    {
         MPI_Recv(buf, size, MPI_DOUBLE, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        // double dx = buf[2] - buf[0]; // distancia xi-xj
-        // double dy = buf[3] - buf[1]; // distancia yi-yj
-        // double d = sqrt()dx * dx) + (dy * dy));
-        // double F = fuerza(1, 1, d);
-        // buf[4] = F;
-        // buf[5] = (-F * dx / d) + ;
-        // buf[6] = (-F * dy / d) + val[6];
-        // buf[7] = F * dx / d;
-        // buf[8] = F * dy / d;
-        // buf[0] = planeta[2 * pid + 2)].x;
-        // buf[1] = planeta[2 * pid + 2].x;
-        // buf[2] = planeta[2 * pid + 3].x;
-        // buf[3] = planeta[2 * pid + 3].x;
+        double dx = buf[2] - buf[0]; // distancia xi-xj
+        double dy = buf[3] - buf[1]; // distancia yi-yj
+        double d = sqrt(dx * dx) + (dy * dy));
+        double F = fuerza(1, 1, d);
+        buf[4] = F;
+        buf[5] = (-F * dx / d) + ;
+        buf[6] = (-F * dy / d) + val[6];
+        buf[7] = F * dx / d;
+        buf[8] = F * dy / d;
+        buf[0] = planeta[2 * pid + 2)].x;
+        buf[1] = planeta[2 * pid + 2].x;
+        buf[2] = planeta[2 * pid + 3].x;
+        buf[3] = planeta[2 * pid + 3].x;
         MPI_Send(val, size, MPI_DOUBLE, next, tag, MPI_COMM_WORLD);
     }
     // Cálculo del tiempo de cómputo total.
@@ -134,9 +135,15 @@ void ringFuerzas(int pid, int np, int N)
 
     if (pid == 0)
     {
-        std::cout << "Fuerza aplicada a cada cuerpo:" << std::endl;
-        std::cout << "Fuerza inicial: "
-                  << "\t" ;
+        std::cout << "Fuerza aplicada a cada cuerpo: (pid == 0) " << std::endl;
+        for (int i = 0; i < size; i++)
+        {
+            std::cout << buf[i] << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "Tiempo total: " << totaltime << std::endl;
+        
     }
     // else
     // {
@@ -150,7 +157,7 @@ void ringFuerzas(int pid, int np, int N)
 double fuerza(double m1, double m2, double d)
 {
 
-    double G = 30;                             // constante de proporcionalidad de la fuerza
+    double G = 6.67384 * pow(10, -11);  // constante de proporcionalidad de la fuerza
     double F = (G * m1 * m2) / std::pow(d, 2); // fuerza gravitacional
 
     return F;
@@ -168,6 +175,13 @@ void posicion(std::vector<Particulas> &planeta, int N, double seed)
         planeta[ii].x = dis(gen);
         planeta[ii].y = dis(gen);
     }
+}
+
+// Fuerza para paralelización.
+double[3] FuerzaN (double r1x, double r1y, double r2x, double r2y){
+
+    double fuerzas[3] = {F, Fx, Fy};
+    return 
 }
 
 void FuerzaT(std::vector<Particulas> &planeta, int N)
