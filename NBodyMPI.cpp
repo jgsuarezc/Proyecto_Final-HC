@@ -24,12 +24,10 @@ MPI_Datatype types[2] = {MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,MPI_DOUBLE,
 
 double fuerza(double m1, double m2, double d);                       // Fuerza gravitacional
 void posicion(std::vector<Particulas> &planeta, int N, double seed); // posición (modifica el vector por referencia)
-// serie
-void FuerzaT(std::vector<Particulas> &planeta, int N);        // Fuerza Total
-void imprimir(const std::vector<Particulas> &planeta, int N); // imprime en pantalla la posicion y la fuerza
 // paralelo
 void FuerzaT(std::vector<Particulas> &planeta, int N, int pid, int np);        // Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta, int N, int pid, int np); // imprime en pantalla la posicion y la fuerza
+void ring(int nreps, int pid, int np);  // Implementación de MPIring.
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +52,22 @@ int main(int argc, char *argv[])
   MPI_Finalize();
 
   return 0;
+}
+
+/**
+ * @brief Usando estructura de Ring MPI paralelización.
+ * Se permite utilizar MPIring para hallar las fuerzas 
+ * en proceso cíclico. En {@code {.language-id}
+ * pid = n
+ * @endcode
+ * } cálcula 
+ * 
+ * @param nreps 
+ * @param pid 
+ * @param np 
+ */
+void ring(int nreps, int pid, int np){
+
 }
 
 // serial

@@ -1,8 +1,9 @@
+SHELL:=/bin/zsh
 CXX=g++
 CXXFLAGS =-fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 
-ejecutable.x : N-body.cpp
-			$(CXX) $(CXXFLAGS) $< -o $@
+ejecutable.x : NBody.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@
 clean :
-			rm datos.txt ejecutable.x
+	rm datos.txt ejecutable.x
