@@ -34,6 +34,7 @@ int main(int argc, char **argv)
       }
     }
 
+FLocal(posiciones,2*N);
 
 
 
@@ -45,7 +46,7 @@ int main(int argc, char **argv)
 
 //calcula la fuerza de las particulas propias del proceso
 void FLocal(double P[],int Tamaño){
-double G=30;
+double G=6.67E-11;
 
   for(int ii=0;ii<Tamaño/2;ii++){
     double sumax=0;
@@ -65,10 +66,10 @@ double G=30;
 }
 
 
-
+/*
 //calcula la fuerza de las particulas propias del proceso con las nuevas particulas en buffer
 void FBufer(double P[],double Buf[],int Tamaño){
-double G=30;
+double G=6.67E-11;
 
   for(int ii=0;ii<Tamaño/2;ii++){
     double sumax=0;
@@ -86,3 +87,4 @@ double G=30;
 
   }
 }
+*/
