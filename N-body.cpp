@@ -79,7 +79,7 @@
 
         //calcula la fuerzas de las particulas nuevas
         void XPrestados(const std::vector<Particulas> PR,const std::vector<Particulas> Bu,int tamaño){
-          double G=10;
+          double G=100;
           double K=9*10E9;//carga electrica
           //fuerza Total sobre la particula
 
