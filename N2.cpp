@@ -4,6 +4,7 @@
 #include<vector>
 #include"D.hpp"
 #include"Serial.h"
+#include "mpi.h"
 
 
 void ring(double P[],int N,int pid, int np);
@@ -32,6 +33,20 @@ int main(int argc, char **argv)
     }
 
 FuerzaTA(posiciones,2*N);
+MPI_Init(&argc, &argv); /* Mandatory */
+
+int pid; /* rank of process */
+int np;  /* number of processes */
+
+MPI_Comm_size(MPI_COMM_WORLD, &np);
+MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+
+ring(pid, np);
+
+MPI_Finalize(); /* Mandatory */
+
+
+
 
 
 
