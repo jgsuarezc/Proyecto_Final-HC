@@ -4,12 +4,10 @@
 #include<random>
 #include "D.hpp"
 
-//serialh
-
 //fuerza gravitacional
 double fuerza(double m1,double m2,double d){
 
-  double G= 1;// constante de proporcionalidad de la fuerza
+  double G= 6.67E-11;// constante de proporcionalidad de la fuerza
   double F=(G*m1*m2)/(d*d);// fuerza gravitacional
 
 return F;
@@ -30,7 +28,7 @@ void posicion (std::vector<Particulas> &planeta,int N,double seed){
 }
 
 void FuerzaT (std::vector<Particulas> &planeta,int N){
-  double G=1;
+  double G=6.67E-11;
   double K=9*10E9;//carga electrica
   //fuerza Total sobre la particula
 
@@ -48,8 +46,8 @@ void FuerzaT (std::vector<Particulas> &planeta,int N){
           double dy=planeta[ii].y-planeta[jj].y;//distancia yi-yj
           double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
           double d3=d*d*d;
-          sumx=(G*(M1T*M2T)/(d3))*dx+sumx;//sumando la fuerza en x debida a las otras particulas
-          sumy=(G*(M1T*M2T)/(d3))*dy+sumy;//sumando la fuerza en y debida a las otras particulas
+          sumx=-(G*(M1T*M2T)/(d3))*dx+sumx;//sumando la fuerza en x debida a las otras particulas
+          sumy=-(G*(M1T*M2T)/(d3))*dy+sumy;//sumando la fuerza en y debida a las otras particulas
           ;
     }
 
