@@ -6,3 +6,4 @@ void posicion (std::vector<Particulas> &planeta,int N,double seed);//posición (
 //serie
 void FuerzaT (std::vector<Particulas> &planeta,int N);//Fuerza Total
 void imprimir(const std::vector<Particulas> &planeta,int N);// imprime en pantalla la posicion y la fuerza
+void FuerzaTA(double P[],int Tamaño);//calcula Fuerza pero usando array
