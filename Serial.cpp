@@ -4,7 +4,7 @@
 #include<random>
 #include "D.hpp"
 
-//serial
+//serialh
 
 //fuerza gravitacional
 double fuerza(double m1,double m2,double d){
