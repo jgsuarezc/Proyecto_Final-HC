@@ -5,10 +5,7 @@
 #include"D.hpp"
 #include"Serial.h"
 
-void FLocal(double P[],int Tamaño);
-void FBufer( double P[],int Tamaño);
 
-//void ring(double P[],int N,int pid, int np);
 
 int main(int argc, char **argv)
 {
@@ -43,27 +40,6 @@ FLocal(posiciones,2*N);
 
 
 
-
-//calcula la fuerza de las particulas propias del proceso
-void FLocal(double P[],int Tamaño){
-double G=6.67E-11;
-
-  for(int ii=0;ii<Tamaño/2;ii++){
-    double sumax=0;
-    double sumay=0;
-    for(int jj=0;jj<Tamaño/2;jj++){
-      if(ii==jj){continue;}
-      double dx=P[2*ii]-P[2*jj];
-      double dy=P[2*ii+1]-P[2*jj+1];
-      double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
-      double d3=d*d*d;
-      sumax=(-G/d3)*dx+sumax;//sumando la fuerza en x debida a las otras particulas
-      sumay=(-G/d3)*dy+sumay;//sumando la fuerza en y debida a las otras particulas
-        }
-    std::cout<<sumax<<"\t"<<sumay<<"\n";
-
-  }
-}
 
 
 /*
