@@ -6,7 +6,7 @@
 #include"Serial.h"
 
 
-
+void ring(double P[],int N,int pid, int np);
 int main(int argc, char **argv)
 {
   //MPI_Init(&argc, &argv); /* Mandatory */
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
       }
     }
 
-FLocal(posiciones,2*N);
+FuerzaTA(posiciones,2*N);
 
 
 
@@ -42,7 +42,7 @@ FLocal(posiciones,2*N);
 
 
 
-/*
+
 //calcula la fuerza de las particulas propias del proceso con las nuevas particulas en buffer
 void FBufer(double P[],double Buf[],int Tamaño){
 double G=6.67E-11;
@@ -52,8 +52,8 @@ double G=6.67E-11;
     double sumay=0;
     for(int jj=0;jj<Tamaño/2;jj++){
 
-      double dx=P[2*ii]-B[2*jj];
-      double dy=P[2*ii+1]-B[2*jj+1];
+      double dx=P[2*ii]-Buf[2*jj];
+      double dy=P[2*ii+1]-Buf[2*jj+1];
       double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
       double d3=d*d*d;
       sumax=(-G/d3)*dx+sumax;//sumando la fuerza en x debida a las otras particulas
@@ -63,4 +63,34 @@ double G=6.67E-11;
 
   }
 }
-*/
+
+
+
+void ring(double P[],int N,int pid, int np)
+{
+  int Tam=2*N/np;//numero de particulas que le corresponderia a cada proceso por dos coordenadas
+  int tag =0;
+  double val[Tam];
+  double buf[Tam];
+      for(int ii=0;ii<Tam;ii++){
+       double tmp=0;
+       val[ii]=P[Tam*pid+ii];
+
+   }
+
+  int next = (pid + 1) % np;
+  int prev = (pid - 1 + np) % np;
+  if (pid == 0)
+  {
+    MPI_Send(val, Tam, MPI_INT, next, tag, MPI_COMM_WORLD);
+
+    MPI_Recv(buf, Tam, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+  }
+  else
+  { // pid != 0
+    MPI_Recv(buf, Tam, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    MPI_Send(val, Tam, MPI_INT, next, tag, MPI_COMM_WORLD);
+  }
+
+}
