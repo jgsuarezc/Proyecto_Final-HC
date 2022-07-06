@@ -54,10 +54,6 @@ MPI_Finalize(); /* Mandatory */
 }
 
 
-
-
-
-
 //calcula la fuerza de las particulas propias del proceso con las nuevas particulas en buffer
 void FBufer(double P[],double Buf[],int Tamaño){
 double G=6.67E-11;
@@ -97,14 +93,16 @@ void ring(double P[],int N,int pid, int np)
   int prev = (pid - 1 + np) % np;
   if (pid == 0)
   {
+    FuerzaTA(val,Tam);
     MPI_Send(val, Tam, MPI_INT, next, tag, MPI_COMM_WORLD);
-
     MPI_Recv(buf, Tam, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    FBufer(val,buf,Tam);
   }
   else
   { // pid != 0
+    FuerzaTA(val,Tam);
     MPI_Recv(buf, Tam, MPI_INT, prev, tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+    FBufer(val,buf,Tam);
     MPI_Send(val, Tam, MPI_INT, next, tag, MPI_COMM_WORLD);
   }
 
