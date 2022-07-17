@@ -54,30 +54,9 @@ MPI_Finalize(); /* Mandatory */
 }
 
 
-//calcula la fuerza de las particulas propias del proceso con las nuevas particulas en buffer
-void FBufer(double P[],double Buf[],int Tamaño){
-double G=6.67E-11;
-
-  for(int ii=0;ii<Tamaño/2;ii++){
-    double sumax=0;
-    double sumay=0;
-    for(int jj=0;jj<Tamaño/2;jj++){
-
-      double dx=P[2*ii]-Buf[2*jj];
-      double dy=P[2*ii+1]-Buf[2*jj+1];
-      double d= sqrt(dx*dx+dy*dy); // distancia al cuadrado
-      double d3=d*d*d;
-      sumax=(-G/d3)*dx+sumax;//sumando la fuerza en x debida a las otras particulas
-      sumay=(-G/d3)*dy+sumay;//sumando la fuerza en y debida a las otras particulas
-        }
-    std::cout<<sumax<<"\t"<<sumay<<"\n";
-
-  }
-}
 
 
-
-void ring(double P[],int N,int pid, int np)
+void ring(double P[],int N,V &tmp,int pid, int np)
 {
   int Tam=2*N/np;//numero de particulas que le corresponderia a cada proceso por dos coordenadas
   int tag =0;
@@ -88,7 +67,8 @@ void ring(double P[],int N,int pid, int np)
        val[ii]=P[Tam*pid+ii];
 
    }
-
+  V tmpF;
+  tmpF.resize(Tam);
   int next = (pid + 1) % np;
   int prev = (pid - 1 + np) % np;
   if (pid == 0)
