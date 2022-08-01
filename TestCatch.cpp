@@ -3,7 +3,7 @@
 #include "D.hpp"
 #include "Serial.h"
 #include <vector>
-
+//Test Gravedad
 
 
 TEST_CASE( "Verifica la fuerza Gravitacional", "Gravitacional" ) {
@@ -19,17 +19,26 @@ TEST_CASE( "Fuerza entre dos particulas", "Finterna" ) {
   //test verifica si  la fuerza entre dos o tres particulas es correcta
   std::vector<Particulas> prueba;
   prueba.resize(2);
+
+  //verifica que    para un par de partuculas conocidas la fuerza sea igual pero opuesta
   Particulas M1;
-  M1.x=1;
-  M1.y=2;
+  M1.x=111341;
+  M1.y=214343;
   Particulas M2;
-  M1.x=1;
-  M1.y=0;
+  M1.x=141234;
+  M1.y=133;
   prueba[0]=M1;
   prueba[1]=M2;
   FuerzaT(prueba,2);
+  //verifica que para un par de particulas aleatorias cumpla que sea igual
+  std::vector<Particulas> prueba2;
+  prueba.resize(2);
+  posicion(prueba2,2,3);
+  FuerzaT(prueba2,2);
 
-  REQUIRE(prueba[0].F==1);
-  REQUIRE(prueba[1].F==1);
+
+  REQUIRE(std::abs(prueba[0].Fx-prueba[1].Fx)<0.001);
+  REQUIRE(std::abs(prueba[0].Fx-prueba[1].Fx)<0.001);
+  REQUIRE(std::abs(prueba2[0].Fx-prueba[1].Fx)<0.001);
 
 }
